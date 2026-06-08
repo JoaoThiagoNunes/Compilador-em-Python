@@ -1,5 +1,6 @@
-# Uso: .\scripts\commit.ps1 "titulo" "corpo opcional"
-# Remove automaticamente o Co-authored-by do Cursor, se aparecer.
+# Uso (arquivos ja devem estar no stage):
+#   git add ...
+#   .\scripts\commit.ps1 "titulo" "corpo opcional"
 param(
     [Parameter(Mandatory = $true)][string]$Title,
     [string]$Body = ""
@@ -16,7 +17,6 @@ if ($Body) {
 
 [System.IO.File]::WriteAllText($msgFile, $text)
 
-git add -A
 git commit -F $msgFile
 
 $log = git log -1 --format=%B

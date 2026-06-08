@@ -1,0 +1,20 @@
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+.venv/
+venv/
+.env
+
+# ANTLR gerado (regenerar com build.ps1)
+src/LangLexer.py
+src/LangLexer.interp
+src/LangLexer.tokens
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# JAR baixado automaticamente por build.ps1
+tools/antlr-4.13.2-complete.jar

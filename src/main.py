@@ -8,7 +8,14 @@ from antlr4 import CommonTokenStream, FileStream, Token
 from antlr4.error.ErrorListener import ErrorListener
 
 from LangLexer import LangLexer
+from lexer import LexerValidator
 from token_output import format_token_line
+
+
+class LexicalError(Exception):
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
+        self.message = message
 
 
 class LexerErrorListener(ErrorListener):
@@ -18,9 +25,9 @@ class LexerErrorListener(ErrorListener):
 
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
         char = offendingSymbol.text if offendingSymbol else "?"
-        self.errors.append(
-            f"Linha {line}:{column} - erro lexico: caractere/token invalido '{char}'"
-        )
+        error = f"Linha {line}:{column} - erro lexico: caractere/token invalido '{char}'"
+        self.errors.append(error)
+        raise LexicalError(error)
 
 
 def run_lexical(source_file: str) -> int:
@@ -36,8 +43,13 @@ def run_lexical(source_file: str) -> int:
     lexer.addErrorListener(error_listener)
 
     stream = CommonTokenStream(lexer)
-    stream.fill()
+    try:
+        stream.fill()
+    except LexicalError as err:
+        print(f"\nERRO LEXICO:\n  {err.message}")
+        return 1
 
+    validator = LexerValidator()
     token_names = lexer.symbolicNames
 
     sep = "-" * 60
@@ -56,7 +68,20 @@ def run_lexical(source_file: str) -> int:
             if tok.type < len(token_names)
             else str(tok.type)
         )
-        print(format_token_line(tok, type_name))
+        display_value = None
+
+        if type_name == "ID":
+            display_value = validator.validate_identifier(
+                tok.text, tok.line, tok.column
+            )
+        elif type_name == "CTE":
+            if not validator.validate_integer(tok.text, tok.line, tok.column):
+                print(format_token_line(tok, type_name, tok.text))
+                print(f"\n{validator.report()}")
+                return 1
+            display_value = tok.text
+
+        print(format_token_line(tok, type_name, display_value))
 
     print(f"{sep}\n")
 
@@ -64,9 +89,13 @@ def run_lexical(source_file: str) -> int:
         print("ERROS LEXICOS:")
         for e in error_listener.errors:
             print(f"  {e}")
+        print()
         return 1
 
-    print("Analise lexica concluida sem problemas.")
+    print(validator.report())
+
+    if validator.has_errors():
+        return 1
     return 0
 
 

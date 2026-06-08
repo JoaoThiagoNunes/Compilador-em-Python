@@ -27,7 +27,12 @@ pip install -r requirements.txt
 
 ```powershell
 cd src
+
+# Analise lexica
 python main.py ..\examples\ok_lexico.sl
+
+# Analise sintatica (gera arvore)
+python main.py ..\examples\ok_programa.sl --parse
 ```
 
 ## Estrutura
@@ -35,10 +40,14 @@ python main.py ..\examples\ok_lexico.sl
 ```
 src/
   LangLexer.g4      # Especificacao lexica
+  LangParser.g4     # Gramatica sintatica corrigida
   token_output.py   # Formatacao tipo + atributo
   lexer.py          # Validacoes pos-lexicas
+  parser.py         # Analise sintatica e arvore
   main.py           # CLI
 examples/           # Programas de teste
+docs/
+  conflitos.md      # Correcoes feitas na gramatica
 ```
 
 ## Fases implementadas
@@ -48,6 +57,7 @@ examples/           # Programas de teste
 | 1 | Estrutura base, build, dependencias |
 | 2 | Lexer conforme especificacao (tokens, atributos, case-insensitive) |
 | 3 | Validacoes (ID 16 chars, CTE 16 bits) e erros lexicos |
+| 4 | Parser com gramatica corrigida e arvore sintatica |
 
 ## Gerar codigo ANTLR
 
@@ -58,6 +68,7 @@ Apos alterar `LangLexer.g4`, execute na raiz do projeto:
 ```
 
 O arquivo `LangLexer.py` e gerado em `src/` e ignorado pelo git.
+Para o parser, `LangParser.py` tambem e gerado pelo mesmo comando.
 
 ---
 

@@ -1,4 +1,4 @@
-# Gera lexer ANTLR4 para Python 3
+# Gera lexer e parser ANTLR4 para Python 3
 $ErrorActionPreference = "Stop"
 
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -15,6 +15,7 @@ if (-not (Test-Path $jar)) {
 Push-Location $src
 try {
     java -jar $jar -Dlanguage=Python3 LangLexer.g4 2>&1
+    java -jar $jar -Dlanguage=Python3 -visitor LangParser.g4 2>&1
     Write-Host "Build concluido."
 }
 finally {

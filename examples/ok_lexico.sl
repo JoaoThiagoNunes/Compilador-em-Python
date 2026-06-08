@@ -1,7 +1,7 @@
 PROGRAM exemplo ;
 / programa de exemplo /
 VAR
-    x : INTEGER ,
+    x : INTEGER ;
     flag : BOOLEAN ;
 BEGIN
     x := 10 + 20 ;

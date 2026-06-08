@@ -10,6 +10,11 @@ venv/
 src/LangLexer.py
 src/LangLexer.interp
 src/LangLexer.tokens
+src/LangParser.py
+src/LangParser.interp
+src/LangParser.tokens
+src/LangParserListener.py
+src/LangParserVisitor.py
 
 # IDE
 .vscode/

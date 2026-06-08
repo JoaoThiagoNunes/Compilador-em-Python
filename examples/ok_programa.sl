@@ -1,8 +1,6 @@
 PROGRAM soma ;
 VAR
-    a : INTEGER ,
-    b : INTEGER ,
-    c : INTEGER ;
+    a , b , c : INTEGER ;
 BEGIN
     READ ( a ) ;
     READ ( b ) ;

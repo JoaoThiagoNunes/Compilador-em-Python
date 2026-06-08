@@ -33,6 +33,12 @@ python main.py ..\examples\ok_lexico.sl
 
 # Analise sintatica (gera arvore)
 python main.py ..\examples\ok_programa.sl --parse
+
+# Analise semantica
+python main.py ..\examples\ok_programa.sl --semantic
+
+# Geracao de codigo
+python main.py ..\examples\ok_programa.sl --code
 ```
 
 ## Estrutura
@@ -44,6 +50,8 @@ src/
   token_output.py   # Formatacao tipo + atributo
   lexer.py          # Validacoes pos-lexicas
   parser.py         # Analise sintatica e arvore
+  semantic.py       # Analise semantica
+  codegen.py        # Geracao de codigo
   main.py           # CLI
 examples/           # Programas de teste
 docs/
@@ -58,6 +66,8 @@ docs/
 | 2 | Lexer conforme especificacao (tokens, atributos, case-insensitive) |
 | 3 | Validacoes (ID 16 chars, CTE 16 bits) e erros lexicos |
 | 4 | Parser com gramatica corrigida e arvore sintatica |
+| 5 | Analisador semantico (tipos, tabela de simbolos) |
+| 6 | Gerador de codigo intermediario |
 
 ## Gerar codigo ANTLR
 

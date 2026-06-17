@@ -1,4 +1,5 @@
 from LangParserVisitor import LangParserVisitor
+from lexer import nome_id
 
 
 class GeradorCodigo(LangParserVisitor):
@@ -6,7 +7,6 @@ class GeradorCodigo(LangParserVisitor):
         self.instrucoes = []
         self.temp = 0
         self.rot = 0
-        self.tabela = {}
 
     def _temp(self):
         self.temp += 1
@@ -16,13 +16,6 @@ class GeradorCodigo(LangParserVisitor):
         self.rot += 1
         return f"L{self.rot}"
 
-    def _valor_inicial(self, tipo):
-        if tipo == "INTEGER":
-            return "0"
-        if tipo == "BOOLEAN":
-            return "false"
-        return '""'
-
     def visitProg(self, ctx):
         self.instrucoes.append("PARA")
         self.visit(ctx.decls())
@@ -30,45 +23,25 @@ class GeradorCodigo(LangParserVisitor):
 
     def visitDeclTip(self, ctx):
         tipo = ctx.tip().getText().upper()
+        valor = "0" if tipo == "INTEGER" else "false"
         for id_token in ctx.listId().ID():
-            nome = id_token.getText()
-            self.tabela[nome] = tipo
-            self.instrucoes.append(f"ALME {self._valor_inicial(tipo)} {nome}")
+            self.instrucoes.append(f"ALME {valor} {nome_id(id_token.getText())}")
 
     def visitCmdLeitura(self, ctx):
         for id_token in ctx.listId().ID():
-            self.instrucoes.append(f"LEIT {id_token.getText()}")
+            self.instrucoes.append(f"LEIT {nome_id(id_token.getText())}")
 
     def visitCmdEscrita(self, ctx):
         for elem in ctx.listW().elemW():
             if elem.CADEIA():
-                texto = elem.CADEIA().getText()
-                self.instrucoes.append(f"IMPR {texto}")
+                self.instrucoes.append(f"IMPR {elem.CADEIA().getText()}")
             else:
-                alvo = self.visit(elem.expr())
-                self.instrucoes.append(f"IMPR {alvo}")
+                self.instrucoes.append(f"IMPR {self.visit(elem.expr())}")
 
     def visitCmdAtribuicao(self, ctx):
-        dest = ctx.ID().getText()
+        dest = nome_id(ctx.ID().getText())
         orig = self.visit(ctx.expr())
         self.instrucoes.append(f"ATRI {orig} {dest}")
-
-    def visitCmdSe(self, ctx):
-        cond = self.visit(ctx.expr())
-        rot_senao = self._rot()
-        rot_fim = self._rot()
-
-        if ctx.ELSE():
-            self.instrucoes.append(f"DSVF {cond} {rot_senao}")
-            self.visit(ctx.cmd(0))
-            self.instrucoes.append(f"DSVI {rot_fim}")
-            self.instrucoes.append(f"ROT {rot_senao}")
-            self.visit(ctx.cmd(1))
-            self.instrucoes.append(f"ROT {rot_fim}")
-        else:
-            self.instrucoes.append(f"DSVF {cond} {rot_fim}")
-            self.visit(ctx.cmd(0))
-            self.instrucoes.append(f"ROT {rot_fim}")
 
     def visitCmdEnquanto(self, ctx):
         rot_ini = self._rot()
@@ -87,9 +60,20 @@ class GeradorCodigo(LangParserVisitor):
         for cmd in ctx.cmd():
             self.visit(cmd)
 
-    def visitExprRel(self, ctx):
+    def visitExprLog(self, ctx):
         esq = self.visit(ctx.expr())
-        dir = self.visit(ctx.expr2())
+        dir = self.visit(ctx.exprRel())
+        op = "OU" if ctx.OPLOG().getText().upper() == "OR" else "E"
+        t = self._temp()
+        self.instrucoes.append(f"{op} {esq} {dir} {t}")
+        return t
+
+    def visitExprPass(self, ctx):
+        return self.visit(ctx.exprRel())
+
+    def visitExprRelOp(self, ctx):
+        esq = self.visit(ctx.exprRel())
+        dir = self.visit(ctx.exprAd())
         op = ctx.OPREL().getText()
         mapa = {
             "==": "IGUAL",
@@ -99,23 +83,22 @@ class GeradorCodigo(LangParserVisitor):
             ">": "MAIOR",
             ">=": "MAIG",
         }
-        nome = mapa.get(op, "IGUAL")
         t = self._temp()
-        self.instrucoes.append(f"{nome} {esq} {dir} {t}")
+        self.instrucoes.append(f"{mapa[op]} {esq} {dir} {t}")
         return t
 
-    def visitExprPass(self, ctx):
-        return self.visit(ctx.expr2())
+    def visitExprRelPass(self, ctx):
+        return self.visit(ctx.exprAd())
 
-    def visitExprAd(self, ctx):
-        esq = self.visit(ctx.expr2())
+    def visitExprAdOp(self, ctx):
+        esq = self.visit(ctx.exprAd())
         dir = self.visit(ctx.term())
         op = "SOMA" if ctx.OPAD().getText() == "+" else "SUBT"
         t = self._temp()
         self.instrucoes.append(f"{op} {esq} {dir} {t}")
         return t
 
-    def visitExpr2Pass(self, ctx):
+    def visitExprAdPass(self, ctx):
         return self.visit(ctx.term())
 
     def visitTermMul(self, ctx):
@@ -139,7 +122,7 @@ class GeradorCodigo(LangParserVisitor):
         return self.visit(ctx.expr())
 
     def visitFatorId(self, ctx):
-        return ctx.ID().getText()
+        return nome_id(ctx.ID().getText())
 
     def visitFatorCte(self, ctx):
         valor = ctx.CTE().getText()

@@ -1,8 +1,8 @@
 from LangParserVisitor import LangParserVisitor
+from lexer import nome_id
 
 INT = "INTEGER"
 BOOL = "BOOLEAN"
-STR = "STRING"
 
 
 class AnalisadorSemantico(LangParserVisitor):
@@ -16,25 +16,17 @@ class AnalisadorSemantico(LangParserVisitor):
     def _linha(self, no):
         return no.symbol.line
 
-    def _nome_tipo(self, ctx):
-        txt = ctx.getText().upper()
-        if txt == "INTEGER":
-            return INT
-        if txt == "BOOLEAN":
-            return BOOL
-        return STR
-
     def visitDeclTip(self, ctx):
-        tipo = self._nome_tipo(ctx.tip())
+        tipo = ctx.tip().getText().upper()
         for id_token in ctx.listId().ID():
-            nome = id_token.getText()
+            nome = nome_id(id_token.getText())
             if nome in self.tabela:
                 self._erro(id_token.symbol.line, f"variavel '{nome}' ja declarada")
             else:
                 self.tabela[nome] = tipo
 
     def visitCmdAtribuicao(self, ctx):
-        nome = ctx.ID().getText()
+        nome = nome_id(ctx.ID().getText())
         linha = self._linha(ctx.ID())
         if nome not in self.tabela:
             self._erro(linha, f"variavel '{nome}' nao declarada")
@@ -45,18 +37,9 @@ class AnalisadorSemantico(LangParserVisitor):
 
     def visitCmdLeitura(self, ctx):
         for id_token in ctx.listId().ID():
-            nome = id_token.getText()
+            nome = nome_id(id_token.getText())
             if nome not in self.tabela:
                 self._erro(id_token.symbol.line, f"variavel '{nome}' nao declarada")
-
-    def visitCmdSe(self, ctx):
-        linha = ctx.IF().symbol.line
-        tipo = self.visit(ctx.expr())
-        if tipo and tipo != BOOL:
-            self._erro(linha, "condicao do IF deve ser booleana")
-        self.visit(ctx.cmd(0))
-        if ctx.ELSE():
-            self.visit(ctx.cmd(1))
 
     def visitCmdEnquanto(self, ctx):
         linha = ctx.WHILE().symbol.line
@@ -70,26 +53,37 @@ class AnalisadorSemantico(LangParserVisitor):
             if elem.expr():
                 self.visit(elem.expr())
 
-    def visitExprRel(self, ctx):
-        linha = ctx.OPREL().symbol.line
+    def visitExprLog(self, ctx):
+        linha = ctx.OPLOG().symbol.line
         t1 = self.visit(ctx.expr())
-        t2 = self.visit(ctx.expr2())
+        t2 = self.visit(ctx.exprRel())
+        if t1 != BOOL or t2 != BOOL:
+            self._erro(linha, "operador logico exige operandos booleanos")
+        return BOOL
+
+    def visitExprPass(self, ctx):
+        return self.visit(ctx.exprRel())
+
+    def visitExprRelOp(self, ctx):
+        linha = ctx.OPREL().symbol.line
+        t1 = self.visit(ctx.exprRel())
+        t2 = self.visit(ctx.exprAd())
         if t1 != INT or t2 != INT:
             self._erro(linha, "operador relacional exige inteiros")
         return BOOL
 
-    def visitExprPass(self, ctx):
-        return self.visit(ctx.expr2())
+    def visitExprRelPass(self, ctx):
+        return self.visit(ctx.exprAd())
 
-    def visitExprAd(self, ctx):
+    def visitExprAdOp(self, ctx):
         linha = ctx.OPAD().symbol.line
-        t1 = self.visit(ctx.expr2())
+        t1 = self.visit(ctx.exprAd())
         t2 = self.visit(ctx.term())
         if t1 != INT or t2 != INT:
             self._erro(linha, "operador aritmetico exige inteiros")
         return INT
 
-    def visitExpr2Pass(self, ctx):
+    def visitExprAdPass(self, ctx):
         return self.visit(ctx.term())
 
     def visitTermMul(self, ctx):
@@ -114,7 +108,7 @@ class AnalisadorSemantico(LangParserVisitor):
         return self.visit(ctx.expr())
 
     def visitFatorId(self, ctx):
-        nome = ctx.ID().getText()
+        nome = nome_id(ctx.ID().getText())
         linha = self._linha(ctx.ID())
         if nome not in self.tabela:
             self._erro(linha, f"variavel '{nome}' nao declarada")

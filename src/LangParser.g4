@@ -1,3 +1,10 @@
+// Gramatica corrigida conforme Especificacao Projeto I (Prof. Layse Souza).
+// Terminais = tokens do LangLexer.g4
+//
+// Correcoes em relacao a gramatica original do enunciado:
+// - Precedencia: OPLOG < OPREL < OPAD < OPMULT < OPNEG
+// - OPENG (operandos primarios) restrito a factor, nao a expr inteira
+
 parser grammar LangParser;
 
 options { tokenVocab = LangLexer; }
@@ -26,7 +33,6 @@ listId
 tip
     : INTEGER
     | BOOLEAN
-    | STRING
     ;
 
 cmdComp
@@ -38,16 +44,11 @@ listCmd
     ;
 
 cmd
-    : cmdIf
-    | cmdWhile
+    : cmdWhile
     | cmdRead
     | cmdWrite
     | cmdAtrib
     | cmdComp
-    ;
-
-cmdIf
-    : IF expr THEN cmd (ELSE cmd)?          # cmdSe
     ;
 
 cmdWhile
@@ -76,13 +77,18 @@ cmdAtrib
     ;
 
 expr
-    : expr OPREL expr2                      # exprRel
-    | expr2                                 # exprPass
+    : expr OPLOG exprRel                    # exprLog
+    | exprRel                               # exprPass
     ;
 
-expr2
-    : expr2 OPAD term                       # exprAd
-    | term                                  # expr2Pass
+exprRel
+    : exprRel OPREL exprAd                  # exprRelOp
+    | exprAd                                # exprRelPass
+    ;
+
+exprAd
+    : exprAd OPAD term                      # exprAdOp
+    | term                                  # exprAdPass
     ;
 
 term
@@ -94,7 +100,7 @@ factor
     : OPNEG factor                          # fatorNeg
     | ABPAR expr FPAR                       # fatorPar
     | ID                                    # fatorId
-    | CTE                                     # fatorCte
-    | TRUE                                    # fatorTrue
-    | FALSE                                   # fatorFalse
+    | CTE                                   # fatorCte
+    | TRUE                                  # fatorTrue
+    | FALSE                                 # fatorFalse
     ;

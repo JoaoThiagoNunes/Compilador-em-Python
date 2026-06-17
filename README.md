@@ -1,20 +1,12 @@
 # Compilador — Projeto I (Linguagens Formais e Compiladores)
 
-Compilador para linguagem imperativa simples, desenvolvido com **ANTLR 4** e **Python 3**.
+Compilador para a linguagem definida em **Especificacao - Projeto I** (Prof. Layse Souza), usando **ANTLR 4** e **Python 3**.
 
-## Informacoes do Projeto
+## Informacoes
 
-* **Curso:** Ciencia da Computacao
 * **Disciplina:** Linguagens Formais e Compiladores
 * **Docente:** Profa. Ma. Layse Souza
 * **Aluno:** Joao Thiago Nunes
-
----
-
-## Requisitos
-
-- Python 3.10+
-- Java JRE 11+ (para gerar o lexer com ANTLR)
 
 ## Instalacao
 
@@ -28,16 +20,9 @@ pip install -r requirements.txt
 ```powershell
 cd src
 
-# Analise lexica
 python main.py ..\examples\ok_lexico.sl
-
-# Analise sintatica (gera arvore)
 python main.py ..\examples\ok_programa.sl --parse
-
-# Analise semantica
 python main.py ..\examples\ok_programa.sl --semantic
-
-# Geracao de codigo
 python main.py ..\examples\ok_programa.sl --code
 ```
 
@@ -45,132 +30,79 @@ python main.py ..\examples\ok_programa.sl --code
 
 ```
 src/
-  LangLexer.g4      # Especificacao lexica
-  LangParser.g4     # Gramatica sintatica corrigida
-  token_output.py   # Formatacao tipo + atributo
-  lexer.py          # Validacoes pos-lexicas
-  parser.py         # Analise sintatica e arvore
+  LangLexer.g4      # Tokens conforme PDF
+  LangParser.g4     # Gramatica corrigida
+  token_output.py   # Saida tipo + atributo
+  lexer.py          # Validacao ID (16) e CTE (16 bits)
+  parser.py         # Analise sintatica
   semantic.py       # Analise semantica
   codegen.py        # Geracao de codigo
-  main.py           # CLI
-examples/           # Programas de teste
-docs/
-  conflitos.md      # Correcoes feitas na gramatica
+  main.py
+examples/
+docs/conflitos.md
 ```
-
-## Fases implementadas
-
-| Commit | Conteudo |
-|--------|----------|
-| 1 | Estrutura base, build, dependencias |
-| 2 | Lexer conforme especificacao (tokens, atributos, case-insensitive) |
-| 3 | Validacoes (ID 16 chars, CTE 16 bits) e erros lexicos |
-| 4 | Parser com gramatica corrigida e arvore sintatica |
-| 5 | Analisador semantico (tipos, tabela de simbolos) |
-| 6 | Gerador de codigo intermediario |
-
-## Gerar codigo ANTLR
-
-Apos alterar `LangLexer.g4`, execute na raiz do projeto:
-
-```powershell
-.\build.ps1
-```
-
-O arquivo `LangLexer.py` e gerado em `src/` e ignorado pelo git.
-Para o parser, `LangParser.py` tambem e gerado pelo mesmo comando.
 
 ---
 
-## Descricao Lexica
-
-A analise lexica identifica e agrupa caracteres do codigo-fonte em **tokens**.
-
-### Regras gerais
-
-* **Case insensitivity:** a linguagem nao diferencia maiusculas de minusculas.
-* **Espacos em branco:** descartados entre tokens.
-* **Comentarios:** delimitados por `/ ... /` (ex.: `/ isto e um comentario /`).
-* **Identificadores (`ID`):** comecam por letra; maximo **16 caracteres** (extras truncados).
-* **Constantes inteiras (`CTE`):** sinal opcional; intervalo **-32768 a 32767** (2 bytes).
-* **Cadeias (`CADEIA`):** delimitadas por aspas duplas (ex.: `"texto"`).
+## Descricao lexica (conforme PDF)
 
 ### Palavras reservadas
 
 `PROGRAM`, `INTEGER`, `BOOLEAN`, `BEGIN`, `END`, `WHILE`, `DO`, `READ`, `VAR`, `FALSE`, `TRUE`, `WRITE`
 
-### Tabelas de tokens
+### Regras
 
-#### Operadores aritmeticos, logicos e negacao
+* Case insensitive
+* Comentarios: `/ texto /`
+* ID: letra + letras/numeros, max 16 caracteres (extras truncados)
+* CTE: inteiro com sinal opcional, intervalo -32768..32767
+* CADEIA: `"texto"` (tipo lexico para strings)
 
-| Simbolo | Token | Atributo |
-| :---: | :---: | :---: |
-| `+` | `OPAD` | `MAIS` |
-| `-` | `OPAD` | `MENOS` |
-| `*` | `OPMULT` | `VEZES` |
-| `/` | `OPMULT` | `DIV` |
-| `OR` | `OPLOG` | `OR` |
-| `AND` | `OPLOG` | `AND` |
-| `~` | `OPNEG` | `NEG` |
+### Tokens com atributo
 
-#### Operadores relacionais
+| Simbolo | Tipo | Atributo |
+|---------|------|----------|
+| `+` `-` | OPAD | MAIS MENOS |
+| `*` `/` | OPMULT | VEZES DIV |
+| `OR` `AND` | OPLOG | OR AND |
+| `~` | OPNEG | NEG |
+| `<` `<=` `>` `>=` `==` `<>` | OPREL | MENOR MENIG MAIOR MAIG IGUAL DIFER |
+| identificador | ID | cadeia |
+| inteiro | CTE | valor |
+| `"..."` | CADEIA | texto |
 
-| Simbolo | Token | Atributo |
-| :---: | :---: | :---: |
-| `<` | `OPREL` | `MENOR` |
-| `<=` | `OPREL` | `MENIG` |
-| `>` | `OPREL` | `MAIOR` |
-| `>=` | `OPREL` | `MAIG` |
-| `==` | `OPREL` | `IGUAL` |
-| `<>` | `OPREL` | `DIFER` |
+### Pontuacao
 
-#### Pontuacao
+`;` PVIG · `.` PONTO · `:` DPONTOS · `,` VIG · `(` ABPAR · `)` FPAR · `:=` ATRIB
 
-| Simbolo | Token |
-| :---: | :---: |
-| `;` | `PVIG` |
-| `.` | `PONTO` |
-| `:` | `DPONTOS` |
-| `,` | `VIG` |
-| `(` | `ABPAR` |
-| `)` | `FPAR` |
-| `:=` | `ATRIB` |
+### Erro lexico
 
-### Tratamento de erros lexicos
-
-* **Erro:** interrompe a execucao e exibe linha/coluna do caractere invalido.
-* **Sucesso:** imprime tokens no formato `Linha | Tipo | Atributo`.
+Para execucao e informa linha/coluna. Sucesso imprime tokens com tipo e atributo.
 
 ---
 
-## Descricao Sintatica (referencia)
+## Descricao sintatica
 
-Gramatica original com conflitos (a ser corrigida nas proximas fases):
+Gramatica corrigida (detalhes em `docs/conflitos.md`):
 
 ```bnf
-Prog       --> PROGRAM IDENTIFIER PVIG Decls CmdComp PONTO
-Decls      --> e | VAR ListDecl
-ListDecl   --> DeclTip | DeclTip ListDecl
-DeclTip    --> ListId DPONTOS Tip PVIG
-ListId     --> IDENTIFIER | IDENTIFIER VIG ListId
-Tip        --> INTEGER | BOOLEAN | STRING
+Prog     -> PROGRAM ID ; Decls CmdComp .
+Decls    -> | VAR ListDecl
+DeclTip  -> ListId : Tip ;
+Tip      -> INTEGER | BOOLEAN
+CmdComp  -> BEGIN ListCmd END
+Cmd      -> While | Read | Write | Atrib | CmdComp
+While    -> WHILE Expr DO Cmd
+Read     -> READ ( ListId )
+Write    -> WRITE ( ListW )
+Atrib    -> ID := Expr
+Expr     -> niveis OPLOG, OPREL, OPAD, OPMULT, factor (OPENG)
+```
 
-CmdComp    --> BEGIN ListCmd END
-ListCmd    --> Cmd | Cmd PVIG ListCmd
-Cmd        --> CmdIf | CmdWhile | CmdRead | CmdWrite | CmdAtrib | CmdComp
+---
 
-CmdIf      --> IF Expr THEN Cmd
-             | IF Expr THEN Cmd ELSE Cmd
+## Gerar codigo ANTLR
 
-CmdWhile   --> WHILE Expr DO Cmd
-
-CmdRead    --> READ ( ListId )
-CmdWrite   --> WRITE ( ListW )
-ListW      --> ElemW | ElemW VIG ListW
-ElemW      --> Expr | CADEIA
-
-CmdAtrib   --> IDENTIFIER := Expr
-
-Expr       --> Expr OPREL Expr | Expr OPAD Expr | Expr OPMULT Expr
-Expr       --> IDENTIFIER | CTE | ABPAR EXPR FPAR | TRUE | FALSE | OPNEG Expr
+```powershell
+.\build.ps1
 ```

@@ -1,7 +1,14 @@
+MAX_ID_LEN = 16
+INT_MIN = -32768
+INT_MAX = 32767
+
+
+def nome_id(text: str) -> str:
+    return text[:MAX_ID_LEN]
+
+
 class LexerValidator:
-    MAX_ID_LEN = 16
-    INT_MIN = -32768
-    INT_MAX = 32767
+    MAX_ID_LEN = MAX_ID_LEN
 
     def __init__(self) -> None:
         self.errors: list[str] = []

@@ -1,21 +1,40 @@
-# Correcoes da gramatica original
+# Correcoes da gramatica — Especificacao Projeto I
 
-## 1. Expressoes ambiguas
+Documento de referencia: `Especificacao - Projeto I (1).pdf` (Prof. Layse Souza).
 
-**Original:** todos os operadores no mesmo nivel de `Expr`.
+## Problemas da gramatica original (enunciado)
 
-**Corrigido:** `expr -> expr OPREL expr2 | expr2`, depois `expr2 -> expr2 OPAD term | term`, etc.
+### 1. Expressoes ambiguas
 
-## 2. Operandos primarios
+Todas as producoes de `Expr` no mesmo nivel geravam ambiguidade
+(ex.: `1 + 2 * 3`).
 
-**Original:** segunda producao de `Expr` competia com expressoes completas.
+**Corrigido** com niveis de precedencia:
 
-**Corrigido:** primarios ficam em `factor` (`ID`, `CTE`, `TRUE`, `FALSE`, parenteses, `OPNEG`).
+```
+expr    -> expr OPLOG exprRel | exprRel
+exprRel -> exprRel OPREL exprAd | exprAd
+exprAd  -> exprAd OPAD term    | term
+term    -> term OPMULT factor   | factor
+factor  -> OPNEG factor | ( expr ) | ID | CTE | TRUE | FALSE
+```
 
-## 3. Declaracao de variaveis
+Ordem (menor para maior): `OPLOG` < `OPREL` < `OPAD` < `OPMULT` < `OPNEG`.
 
-Formato: `a , b : INTEGER ;`
+### 2. OPENG aplicado a Expr
 
-## 4. Lexer
+O enunciado indica que operandos primarios (`ID`, `CTE`, `( expr )`,
+`TRUE`, `FALSE`, `OPNEG`) estavam no nivel errado.
 
-Incluidos `IF`, `THEN`, `ELSE` e tipo `STRING`.
+**Corrigido:** primarios ficam apenas em `factor`.
+
+### 3. Declaracao de variaveis
+
+Formato exigido: `id1 , id2 : INTEGER ;`
+
+Tipos permitidos: apenas `INTEGER` e `BOOLEAN` (conforme palavras reservadas do PDF).
+
+### 4. O que NAO faz parte desta especificacao
+
+- Comandos `IF`, `THEN`, `ELSE` (nao estao nas palavras reservadas do PDF)
+- Tipo `STRING` como palavra reservada (literais usam token `CADEIA`)

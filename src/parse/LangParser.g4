@@ -1,9 +1,6 @@
 // Gramatica corrigida conforme Especificacao Projeto I (Prof. Layse Souza).
-// Terminais = tokens do LangLexer.g4
-//
-// Correcoes em relacao a gramatica original do enunciado:
-// - Precedencia: OPLOG < OPREL < OPAD < OPMULT < OPNEG
-// - OPENG (operandos primarios) restrito a factor, nao a expr inteira
+// Correcoes: precedencia OPLOG < OPREL < OPAD < OPMULT < OPNEG;
+// OPENG (operandos primarios) restrito a factor.
 
 parser grammar LangParser;
 

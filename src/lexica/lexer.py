@@ -33,10 +33,10 @@ class LexerValidator:
             )
             return False
 
-        if value < self.INT_MIN or value > self.INT_MAX:
+        if value < INT_MIN or value > INT_MAX:
             self.errors.append(
                 f"Linha {line}:{column}: inteiro {value} fora do intervalo "
-                f"[{self.INT_MIN}, {self.INT_MAX}]."
+                f"[{INT_MIN}, {INT_MAX}]."
             )
             return False
         return True

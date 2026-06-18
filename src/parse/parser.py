@@ -1,7 +1,9 @@
 from antlr4.error.ErrorListener import ErrorListener
 from antlr4.tree.Trees import Trees
-from LangLexer import LangLexer
-from LangParser import LangParser
+
+from lexica.LangLexer import LangLexer
+from parse.LangParser import LangParser
+
 
 class ErroSintatico(ErrorListener):
     def __init__(self):

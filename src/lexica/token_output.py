@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from antlr4.Token import Token
 
-# atributo para tokens com atributo
 _OPAD_ATTR = {"+": "MAIS", "-": "MENOS"}
 _OPMULT_ATTR = {"*": "VEZES", "/": "DIV"}
 _OPLOG_ATTR = {"OR": "OR", "AND": "AND"}
@@ -16,7 +15,6 @@ _OPREL_ATTR = {
 }
 _OPNEG_ATTR = {"~": "NEG"}
 
-# Tokens que possuem atributo além do tipo
 _TOKENS_WITH_ATTR = {
     "OPAD",
     "OPMULT",
@@ -49,6 +47,5 @@ def format_token_line(tok: Token, type_name: str, display_value: str | None = No
     attr = display_value if display_value is not None else token_attribute(type_name, tok.text)
     if type_name in _TOKENS_WITH_ATTR:
         return f"{tok.line:<7} {type_name:<12} {attr}"
-    # Palavras reservadas e pontuacao: tipo = propria palavra/token
     label = type_name if type_name else tok.text
     return f"{tok.line:<7} {label:<12} {label}"

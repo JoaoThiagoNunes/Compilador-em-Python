@@ -1,5 +1,5 @@
-from LangParserVisitor import LangParserVisitor
-from lexer import nome_id
+from lexica.lexer import nome_id
+from parse.LangParserVisitor import LangParserVisitor
 
 INT = "INTEGER"
 BOOL = "BOOLEAN"
